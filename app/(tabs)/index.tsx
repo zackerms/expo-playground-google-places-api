@@ -5,6 +5,7 @@ import Constants from "expo-constants";
 
 export default function HomeScreen() {
   const [autoCompleteSearchResults, setAutoCompleteSearchResults] = useState<AutoCompleteSearchResult[]>([]);
+  const [placeDetailResult, setPlaceDetailResult] = useState<PlaceDetailSearchResult|null>(null);
 
   useEffect(() => {
     PlacesAutocomplete.initPlaces(Constants.expoConfig!.extra!.GOOGLE_PLACES_API_KEY);
@@ -12,9 +13,9 @@ export default function HomeScreen() {
 
   const onAutoComplete = useCallback(async() => {
     try{
-
       const result = await PlacesAutocomplete.findPlaces("紀伊國屋書店")
       setAutoCompleteSearchResults(result.places.map((place): AutoCompleteSearchResult => ({
+        placeId: place.placeId,
         name: place.fullText, 
         description: place.description,
         distance: place.distance,
@@ -27,6 +28,23 @@ export default function HomeScreen() {
     }
   }, []);
 
+  const onPlaceDetail = useCallback(async (placeId: string) => {
+      try {
+          const result = await PlacesAutocomplete.placeDetails(placeId);
+          result.formattedAddress
+          setPlaceDetailResult({
+            name: result.name,
+            formattedAddress: result.formattedAddress,
+            latitude: result.coordinate.latitude,
+            longitude: result.coordinate.longitude, 
+          } )
+
+      } catch(e) {
+        Alert.alert("ERROR")
+        console.error(e)
+      }
+  }, []);
+
   return (
     <SafeAreaView style={{ paddingTop: 64 }}>
       <Button onPress={onAutoComplete} title="Search"/>
@@ -34,10 +52,20 @@ export default function HomeScreen() {
         <View style={{ display: "flex", flexDirection: "column", gap: 16}}>
           {
             autoCompleteSearchResults.map((result, index) => (
-              <Text key={index}>
+              <Text key={index}
+                onPress={() => onPlaceDetail(result.placeId)}
+              >
                 {result.name} {result.description} {result.distance}
               </Text>
             ))
+          }
+          {
+            placeDetailResult && <>
+            <Text>#Detail</Text>
+            <Text>
+                {placeDetailResult?.name} {placeDetailResult?.formattedAddress} {placeDetailResult.latitude} {placeDetailResult.longitude}
+            </Text>
+            </>
           }
         </View>
       </ScrollView>
@@ -46,7 +74,15 @@ export default function HomeScreen() {
 }
 
 type AutoCompleteSearchResult = {
+  placeId: string;
   name: string;
   description: string;
   distance: number | null;
+}
+
+type PlaceDetailSearchResult = {
+  name?: string;
+  formattedAddress?: string,
+  latitude: number,
+  longitude: number,
 }
