@@ -32,3 +32,11 @@ keytool -list -v -keystore ./android/app/debug.keystore
 // .env.local
 GOOGLE_PLACES_API_KEY=
 ```
+
+# Axiosを利用する方法
+リクエストヘッダにパッケージ名やFingerprintを指定することでできる
+https://cloud.google.com/docs/authentication/api-keys?hl=ja#android
+```
+// .env.local
+ANDROID_FINGERPRINT=
+```

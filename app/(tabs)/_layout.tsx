@@ -13,6 +13,12 @@ export default function TabLayout() {
           title: 'Home',
         }}
       />
+      <Tabs.Screen
+        name="http"
+        options={{
+          title: 'HTTP',
+        }}
+      />
     </Tabs>
   );
 }
