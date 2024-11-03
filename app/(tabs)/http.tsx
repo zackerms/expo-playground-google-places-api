@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { View, Text, ScrollView, SafeAreaView, Button, Alert, Pressable } from "react-native";
 import PlacesAutocomplete from "expo-google-places-autocomplete";
 import Constants from "expo-constants";
@@ -15,16 +15,19 @@ const baseUrl = "https://maps.googleapis.com/maps/api/place";
 
 export default function HttpScreen() {
   const [autoCompleteSearchResults, setAutoCompleteSearchResults] = useState<AutoCompleteSearchResult | null>(null);
-  const [PlaceDetailSearchResult, setPlaceDetailResult] = useState<PlaceDetailSearchResult | null>(null);
+  const [placeDetailSearchResult, setPlaceDetailResult] = useState<PlaceDetailSearchResult | null>(null);
 
-  const onAutoComplete = useCallback(async () => {
     // https://cloud.google.com/docs/authentication/api-keys?hl=ja#android
-    const headers = {
+  const requestHeader = useMemo(() => {
+    return {
       "X-Android-Package": applicationId,
       // https://stackoverflow.com/questions/61518968/using-google-api-key-with-restriction-in-android
       "X-Android-Cert": (Constants.expoConfig!.extra!.ANDROID_FINGERPRINT as string).replaceAll(":", ""),
     }
-    console.log({ headers })
+  }, []);
+
+  const onAutoComplete = useCallback(async () => {
+    console.log({ headers: requestHeader })
     try {
       const response = await axios.get(
         `${baseUrl}/autocomplete/json`,
@@ -36,7 +39,7 @@ export default function HttpScreen() {
             radius: 10 * 1000,
             location: `${locationSinjukuStation.latitude},${locationSinjukuStation.longitude}`,
           },
-          headers,
+          headers: requestHeader,
         }
       );
 
@@ -74,7 +77,28 @@ export default function HttpScreen() {
 
   const onPlaceDetail = useCallback(async (placeId: string) => {
     try {
+      const response = await axios.get(`${baseUrl}/details/json`, {
+        params: {
+          place_id: placeId,
+          language: "ja",
+          key: Constants.expoConfig!.extra!.GOOGLE_PLACES_API_KEY,
+          fields: "geometry",
+        },
+        headers: requestHeader,
+      });
 
+      if (response.data.status !== "OK") {
+        throw new Error(
+          "Google Places API Error: " + response.data.status
+        );
+      }
+
+      const result = response.data.result;
+      console.log({ result });
+      setPlaceDetailResult({
+        latitude: result.geometry.location.lat,
+        longitude: result.geometry.location.lng,
+      })
     } catch (e) {
       Alert.alert("ERROR")
       console.error(e)
@@ -96,15 +120,16 @@ export default function HttpScreen() {
 
                 }}>
                 <Text>
-                    Description: {result.description}
+                  Description: {result.description}
                 </Text>
               </Pressable>
             ))
           }
           {
-            PlaceDetailSearchResult && <>
+            placeDetailSearchResult && <>
               <Text>#Detail</Text>
               <Text>
+                位置情報： Lat {placeDetailSearchResult.latitude} Lng: {placeDetailSearchResult.longitude}
               </Text>
             </>
           }
@@ -140,8 +165,6 @@ type AutoCompleteSearchResult = {
 }
 
 type PlaceDetailSearchResult = {
-  name?: string;
-  formattedAddress?: string,
   latitude: number,
   longitude: number,
 }
