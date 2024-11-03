@@ -1,50 +1,34 @@
 # Welcome to your Expo app 👋
 
-This is an [Expo](https://expo.dev) project created with [`create-expo-app`](https://www.npmjs.com/package/create-expo-app).
-
-## Get started
-
-1. Install dependencies
-
-   ```bash
-   npm install
-   ```
-
-2. Start the app
-
-   ```bash
-    npx expo start
-   ```
-
-In the output, you'll find options to open the app in a
-
-- [development build](https://docs.expo.dev/develop/development-builds/introduction/)
-- [Android emulator](https://docs.expo.dev/workflow/android-studio-emulator/)
-- [iOS simulator](https://docs.expo.dev/workflow/ios-simulator/)
-- [Expo Go](https://expo.dev/go), a limited sandbox for trying out app development with Expo
-
-You can start developing by editing the files inside the **app** directory. This project uses [file-based routing](https://docs.expo.dev/router/introduction).
-
-## Get a fresh project
-
-When you're ready, run:
-
-```bash
-npm run reset-project
+## Google Places APIをインストール
+https://github.com/alanjhughes/expo-google-places-autocomplete
+```sh
+npx expo install expo-google-places-autocomplete
 ```
 
-This command will move the starter code to the **app-example** directory and create a blank **app** directory where you can start developing.
+## Prebuild
+パッケージ名やfingerprintでAPIキーを制限するためにビルドをする必要がある
+```sh
+yarn expo prebuild --platform android
+```
 
-## Learn more
+- 起動とビルド
+```sh
+yarn android
+```
 
-To learn more about developing your project with Expo, look at the following resources:
+- finger printを取得
+https://zenn.dev/garnet3106/articles/eb432898e247c6
+```sh
+keytool -list -v -keystore ./android/app/debug.keystore
+```
 
-- [Expo documentation](https://docs.expo.dev/): Learn fundamentals, or go into advanced topics with our [guides](https://docs.expo.dev/guides).
-- [Learn Expo tutorial](https://docs.expo.dev/tutorial/introduction/): Follow a step-by-step tutorial where you'll create a project that runs on Android, iOS, and the web.
-
-## Join the community
-
-Join our community of developers creating universal apps.
-
-- [Expo on GitHub](https://github.com/expo/expo): View our open source platform and contribute.
-- [Discord community](https://chat.expo.dev): Chat with Expo users and ask questions.
+## APIキーを発行
+- API制限：Google Places API
+- アプリケーション制限
+    - パッケージ名: com.playground.expo.placesapi (app.jsonに記載)
+    - fingerprint
+```
+// .env.local
+GOOGLE_PLACES_API_KEY=
+```
